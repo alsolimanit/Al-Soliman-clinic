@@ -4,8 +4,10 @@ export interface ClinicRecord {
   doctorName: string;
 }
 
-// Use proxied path for dev to avoid CORS issues. Vite proxy rewrites `/api/clinic` to the Apps Script URL.
-const API_URL = '/api/clinic';
+// Prefer an explicit web app URL for reliability during testing.
+// You can override via `import.meta.env.VITE_CLINIC_API_URL` in dev if desired.
+const API_URL = import.meta.env.VITE_CLINIC_API_URL ||
+  'https://script.google.com/macros/s/AKfycbx_nJ8_t_meDHZslHKyT7Ho4-_6MUzwTl_K9aMQ-khFSlIEi4Fkp-mIqGUWGS5eHMMp/exec';
 
 /**
  * Fetch clinic data from the Google Apps Script endpoint.
