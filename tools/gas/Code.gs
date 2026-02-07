@@ -8,9 +8,19 @@ function doGet(e) {
     const SHEET_NAME = 'Alsoliman hs v 0.1 Clinics Management database';
 
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+
+    // Debug mode: return spreadsheet metadata and sheet list to help diagnose "Sheet not found" errors
+    if (e && e.parameter && e.parameter.debug === '1') {
+      const sheetNames = ss.getSheets().map(s => s.getName());
+      const owner = ss.getOwner ? ss.getOwner().getEmail() : null;
+      return ContentService.createTextOutput(JSON.stringify({ spreadsheetId: SPREADSHEET_ID, sheetNames, owner }))
+        .setMimeType(ContentService.MimeType.JSON)
+        .setHeader('Access-Control-Allow-Origin', '*');
+    }
+
     const sheet = ss.getSheetByName(SHEET_NAME);
     if (!sheet) {
-      return ContentService.createTextOutput(JSON.stringify({ error: 'Sheet not found: ' + SHEET_NAME }))
+      return ContentService.createTextOutput(JSON.stringify({ error: 'Sheet not found: ' + SHEET_NAME, availableSheets: ss.getSheets().map(s => s.getName()) }))
         .setMimeType(ContentService.MimeType.JSON)
         .setHeader('Access-Control-Allow-Origin', '*');
     }

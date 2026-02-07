@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "gas:push": "clasp push --rootDir=tools/gas",
+    "gas:deploy": "clasp deploy --rootDir=tools/gas --description \"repo-deploy\"",
     "build": "vite build",
     "preview": "vite preview",
     "start": "electron .",
