@@ -3,8 +3,7 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
-import DoctorsSection from './components/DoctorsSection';
-import { Doctor } from './types';
+// Removed DoctorsSection and any hardcoded sample data to rely solely on real API
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -21,11 +20,6 @@ const App: React.FC = () => {
     localStorage.setItem('isLoggedIn', 'true');
   };
 
-  const sampleDoctors: Doctor[] = [
-    { id: '1', name: 'د. أحمد محمد', specialty: 'طب عام', patientCount: 12, status: 'active' },
-    { id: '2', name: 'د. فاطمة علي', specialty: 'أمراض النساء', patientCount: 8, status: 'active' },
-    { id: '3', name: 'د. محمود سالم', specialty: 'الأطفال', patientCount: 15, status: 'active' }
-  ];
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
@@ -41,9 +35,7 @@ const App: React.FC = () => {
             <h2 className="text-3xl font-black text-[#002366]">تتبع المرضى والعيادات</h2>
             <Dashboard />
           </div>
-          <div className="mt-16">
-            <DoctorsSection doctors={sampleDoctors} />
-          </div>
+          {/* DoctorsSection removed to avoid hardcoded/mock data. Dashboard shows live data only. */}
         </main>
       </div>
     </div>

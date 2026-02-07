@@ -12,10 +12,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if ((username === 'admin' || username === 'it') && password === 'العيادات') {
+    // Removed hardcoded demo credentials.
+    // For now accept any non-empty username/password so auth can be wired to a real backend later.
+    if (username.trim() && password.trim()) {
       onLogin();
     } else {
-      setError('خطأ في اسم المستخدم أو كلمة المرور');
+      setError('يرجى إدخال اسم المستخدم وكلمة المرور');
     }
   };
 
@@ -104,7 +106,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             </button>
           </form>
 
-          <p className="text-xs text-slate-400 font-bold mt-8 text-center">بيانات تجريبية: اسم المستخدم: admin | كلمة المرور: العيادات</p>
+          <p className="text-xs text-slate-400 font-bold mt-8 text-center">يرجى استخدام بيانات اعتماد صالحة</p>
         </div>
       </div>
     </div>
