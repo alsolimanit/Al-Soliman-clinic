@@ -103,35 +103,32 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading && (
-          <div className="col-span-full text-center text-slate-400">جاري تحميل البيانات...</div>
-        )}
-
+      <div className="p-6">
         {error && (
-          <div className="col-span-full text-center text-red-500">خطأ: {error}</div>
+          <div className="mb-4 text-center text-red-500">خطأ: {error}</div>
         )}
 
         {!loading && patients.length === 0 && !error && (
-          <div className="col-span-full text-center text-slate-400">لا توجد بيانات متاحة</div>
+          <div className="mb-4 text-center text-slate-400">لا توجد بيانات متاحة</div>
         )}
 
-        {patients.map((p, idx) => (
-          <div key={p.id} className="bg-white rounded-2xl p-6 shadow-md border border-slate-100">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-lg font-black text-slate-800">{p.fullName}</div>
-              <div className="text-sm text-slate-400">#{idx + 1}</div>
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-100">
+          {patients.map((p, idx) => (
+            <div key={p.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50">
+              <div>
+                <div className="text-base font-bold text-slate-800">{p.fullName}</div>
+                <div className="text-sm text-slate-500 flex items-center gap-3 mt-1">
+                  <Stethoscope size={16} />
+                  <span className="font-semibold">{p.doctorName}</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-slate-400">{p.registrationTime}</div>
+                <div className="text-sm text-slate-500 mt-1">#{idx + 1}</div>
+              </div>
             </div>
-            <div className="text-sm text-slate-600 mb-3 flex items-center gap-3">
-              <Stethoscope size={18} />
-              <span className="font-bold">{p.doctorName}</span>
-            </div>
-            <div className="text-xs text-slate-400 flex items-center gap-2">
-              <Calendar size={16} />
-              <span>{p.registrationTime}</span>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

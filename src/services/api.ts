@@ -6,7 +6,7 @@ export interface ClinicRecord {
 
 // Prefer an explicit web app URL for reliability during testing.
 // You can override via `import.meta.env.VITE_CLINIC_API_URL` in dev if desired.
-const API_URL = import.meta.env.VITE_CLINIC_API_URL ||
+const API_URL = (import.meta as any).env?.VITE_CLINIC_API_URL ||
   'https://script.google.com/macros/s/AKfycby-M_Sa8DF2WZVGB_yJlTSSxoWEqkr100lrGD_lnzlGGa9oANHqWBSXETwOjwxOEO0m/exec';
 
 /**
