@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
           target: 'https://script.google.com',
           changeOrigin: true,
           secure: true,
-          rewrite: (path) => path.replace(/^\/api\/clinic/, '/macros/s/AKfycbwRigrXmHXwpKj7CFmhb-AgflfwTfn-MStXMXHrbLGUCPX0wKzkUkWa50thNbxoaqBN/exec'),
+          rewrite: (path) => path.replace(/^\/api\/clinic/, '/macros/s/AKfycbx_nJ8_t_meDHZslHKyT7Ho4-_6MUzwTl_K9aMQ-khFSlIEi4Fkp-mIqGUWGS5eHMMp/exec'),
         },
       },
     },
