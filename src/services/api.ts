@@ -7,7 +7,7 @@ export interface ClinicRecord {
 // Prefer an explicit web app URL for reliability during testing.
 // You can override via `import.meta.env.VITE_CLINIC_API_URL` in dev if desired.
 const API_URL = import.meta.env.VITE_CLINIC_API_URL ||
-  'https://script.google.com/macros/s/AKfycbx_nJ8_t_meDHZslHKyT7Ho4-_6MUzwTl_K9aMQ-khFSlIEi4Fkp-mIqGUWGS5eHMMp/exec';
+  'https://script.google.com/macros/s/AKfycby-M_Sa8DF2WZVGB_yJlTSSxoWEqkr100lrGD_lnzlGGa9oANHqWBSXETwOjwxOEO0m/exec';
 
 /**
  * Fetch clinic data from the Google Apps Script endpoint.
