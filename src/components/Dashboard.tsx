@@ -45,6 +45,9 @@ const Dashboard: React.FC = () => {
   };
 
   const load = async () => {
+    // Prevent overlapping fetches: if a fetch is still in progress, skip this interval.
+    if ((window as any).__isFetchingClinicData) return;
+    (window as any).__isFetchingClinicData = true;
     setLoading(true);
     try {
       const rows = await fetchClinicData();
@@ -56,9 +59,12 @@ const Dashboard: React.FC = () => {
       setPatients(mapped);
       setError(null);
     } catch (e: any) {
+      // Keep previous `patients` intact; just surface the error to user and console.
+      console.error('[Dashboard] fetch error:', e?.message || e);
       setError(e?.message || 'خطأ في جلب البيانات');
     } finally {
       setLoading(false);
+      (window as any).__isFetchingClinicData = false;
     }
   };
 

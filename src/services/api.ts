@@ -13,26 +13,39 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwRigrXmHXwpKj7CFmhb-Ag
  * - Returns an array of `ClinicRecord` objects.
  */
 export async function fetchClinicData(): Promise<ClinicRecord[]> {
-  const res = await fetch(API_URL, { cache: 'no-store' });
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status}`);
+  // Implement retry with timeout to make fetching more resilient.
+  const maxAttempts = 3;
+  const timeoutMs = 8000; // abort if request takes longer than 8s
+
+  let lastError: any = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(API_URL, { cache: 'no-store', signal: controller.signal });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      const data = await res.json();
+
+      if (!Array.isArray(data)) throw new Error('Unexpected API response: expected an array');
+
+      const mapped = data.map((row: any) => ({
+        timestamp: String(row.timestamp || row.Timestamp || row.time || row.date || ''),
+        patientName: String(row.patientName || row['Full Patient Name'] || row.patient || row.name || ''),
+        doctorName: String(row.doctorName || row['Doctor Name'] || row.doctor || ''),
+      }));
+
+      console.log(`[api] fetchClinicData -> attempt ${attempt} succeeded, records=${mapped.length}`);
+      return mapped;
+    } catch (err: any) {
+      clearTimeout(timer);
+      lastError = err;
+      console.warn(`[api] fetchClinicData -> attempt ${attempt} failed:`, err?.message || err);
+      // small backoff before retrying
+      if (attempt < maxAttempts) await new Promise((r) => setTimeout(r, 500 * attempt));
+    }
   }
-  const data = await res.json();
 
-  // The Apps Script may return an array of objects.
-  if (!Array.isArray(data)) {
-    throw new Error('Unexpected API response: expected an array');
-  }
-
-  // Map/normalize fields to our expected keys. Be defensive about field names.
-  const mapped = data.map((row: any) => ({
-    timestamp: String(row.timestamp || row.Timestamp || row.time || row.date || ''),
-    patientName: String(row.patientName || row['Full Patient Name'] || row.patient || row.name || ''),
-    doctorName: String(row.doctorName || row['Doctor Name'] || row.doctor || ''),
-  }));
-
-  // Debug: indicate data received from API
-  console.log(`[api] fetchClinicData -> received ${mapped.length} records`);
-
-  return mapped;
+  // All attempts failed — surface a clear error message
+  throw new Error(`Failed to fetch clinic data after ${maxAttempts} attempts: ${lastError?.message || lastError}`);
 }
