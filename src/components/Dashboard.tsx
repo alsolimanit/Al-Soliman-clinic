@@ -65,10 +65,10 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     // Initial load and polling setup:
     // - Call `load()` once immediately to populate data on mount.
-    // - Create an interval to call `load()` every 5 seconds to keep data live.
+    // - Create an interval to call `load()` every 3 seconds to keep data live (within requested 3-5s).
     // - Store the interval id in a ref and clear it on unmount to avoid leaks.
     load();
-    intervalRef.current = window.setInterval(load, 5000);
+    intervalRef.current = window.setInterval(load, 3000);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
