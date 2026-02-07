@@ -4,8 +4,8 @@ export interface ClinicRecord {
   doctorName: string;
 }
 
-// Google Apps Script Web App URL (reads the specified Google Sheet)
-const API_URL = 'https://script.google.com/macros/s/AKfycbwRigrXmHXwpKj7CFmhb-AgflfwTfn-MStXMXHrbLGUCPX0wKzkUkWa50thNbxoaqBN/exec';
+// Use proxied path for dev to avoid CORS issues. Vite proxy rewrites `/api/clinic` to the Apps Script URL.
+const API_URL = '/api/clinic';
 
 /**
  * Fetch clinic data from the Google Apps Script endpoint.
@@ -25,6 +25,15 @@ export async function fetchClinicData(): Promise<ClinicRecord[]> {
       const res = await fetch(API_URL, { cache: 'no-store', signal: controller.signal });
       clearTimeout(timer);
       if (!res.ok) throw new Error(`API error: ${res.status}`);
+      // Inspect content type first to provide clearer errors when HTML is returned.
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        // read as text to include first part of HTML or error page in thrown message
+        const text = await res.text();
+        const snippet = text.slice(0, 400).replace(/\s+/g, ' ');
+        throw new Error(`Expected JSON but received ${contentType || 'unknown'}: ${snippet}`);
+      }
+
       const data = await res.json();
 
       if (!Array.isArray(data)) throw new Error('Unexpected API response: expected an array');
