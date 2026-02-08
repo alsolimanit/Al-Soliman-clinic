@@ -44,6 +44,34 @@ const Dashboard: React.FC = () => {
     return mapped;
   };
 
+  // Notification helpers
+  const [notification, setNotification] = useState<{ message: string; visible: boolean }>({ message: '', visible: false });
+  const notifyTimerRef = useRef<number | null>(null);
+  const prevPatientsRef = useRef<PatientView[]>([]);
+
+  const showNotification = (msg: string) => {
+    setNotification({ message: msg, visible: true });
+    if (notifyTimerRef.current) clearTimeout(notifyTimerRef.current);
+    notifyTimerRef.current = window.setTimeout(() => setNotification({ message: '', visible: false }), 4000);
+  };
+
+  const playTone = () => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = 1000;
+      g.gain.value = 0.05;
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start();
+      setTimeout(() => { o.stop(); ctx.close(); }, 250);
+    } catch (e) {
+      console.warn('Audio play failed', e);
+    }
+  };
+
   const load = async () => {
     // Prevent overlapping fetches: if a fetch is still in progress, skip this interval.
     if ((window as any).__isFetchingClinicData) return;
@@ -56,7 +84,16 @@ const Dashboard: React.FC = () => {
       const mapped = parseAndMap(rows);
       // Log when parsed mapping changes counts
       console.log(`[Dashboard] mapped to ${mapped.length} patient views`);
+      // detect new entries and notify (only after initial load)
+      const prev = prevPatientsRef.current || [];
+      const prevIds = new Set(prev.map(p => p.id));
+      const newItems = mapped.filter(p => !prevIds.has(p.id));
+      if (newItems.length > 0 && prev.length > 0) {
+        playTone();
+        showNotification(`تم تسجيل حجز جديد (${newItems.length})`);
+      }
       setPatients(mapped);
+      prevPatientsRef.current = mapped;
       setError(null);
     } catch (e: any) {
       // Keep previous `patients` intact; just surface the error to user and console.
@@ -88,7 +125,7 @@ const Dashboard: React.FC = () => {
   }).length;
 
   return (
-    <div className="w-full bg-white rounded-[3rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden border border-white animate-fadeIn">
+    <div className="w-full bg-white rounded-[2rem] shadow-lg overflow-hidden border border-white animate-fadeIn relative">
       <div className="px-10 py-8 border-b border-white/5 bg-[#1256c4] text-white flex items-center justify-between">
         <div className="flex items-center gap-3">
           <User size={26} className="text-[#3498db]" />
@@ -114,12 +151,17 @@ const Dashboard: React.FC = () => {
 
         <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-100">
           {patients.map((p, idx) => (
-            <div key={p.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50">
-              <div>
-                <div className="text-base font-bold text-slate-800">{p.fullName}</div>
-                <div className="text-sm text-slate-500 flex items-center gap-3 mt-1">
-                  <Stethoscope size={16} />
-                  <span className="font-semibold">{p.doctorName}</span>
+            <div key={p.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 border-b last:border-b-0">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                  <User size={20} className="text-blue-700" />
+                </div>
+                <div>
+                  <div className="text-base font-bold text-slate-800">{p.fullName}</div>
+                  <div className="text-sm text-slate-500 flex items-center gap-2 mt-1">
+                    <Stethoscope size={14} />
+                    <span className="font-medium">دكتور/ {p.doctorName}</span>
+                  </div>
                 </div>
               </div>
               <div className="text-right">
@@ -130,6 +172,16 @@ const Dashboard: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Toast notification */}
+      {notification.visible && (
+        <div className="fixed left-6 bottom-6 z-50">
+          <div className="bg-white/95 backdrop-blur-sm border border-slate-200 shadow-md rounded-lg px-5 py-3 flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full bg-emerald-500" />
+            <div className="text-sm font-medium">{notification.message}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
