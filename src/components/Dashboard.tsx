@@ -153,8 +153,8 @@ const Dashboard: React.FC = () => {
           {patients.map((p, idx) => (
             <div key={p.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 border-b last:border-b-0">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                  <User size={20} className="text-blue-700" />
+                <div className="icon-btn">
+                  <User size={20} />
                 </div>
                 <div>
                   <div className="text-base font-bold text-slate-800">{p.fullName}</div>
