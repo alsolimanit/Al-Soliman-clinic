@@ -60,3 +60,22 @@ export async function fetchClinicData(): Promise<ClinicRecord[]> {
   // All attempts failed — surface a clear error message
   throw new Error(`Failed to fetch clinic data after ${maxAttempts} attempts: ${lastError?.message || lastError}`);
 }
+
+/**
+ * Request deletion of records by timestamps.
+ * The Apps Script endpoint must support POST JSON { action: 'delete', timestamps: [...] }
+ */
+export async function deleteClinicRecords(timestamps: string[]): Promise<{ deletedCount: number }> {
+  if (!Array.isArray(timestamps) || timestamps.length === 0) return { deletedCount: 0 };
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'delete', timestamps }),
+    cache: 'no-store',
+  });
+
+  if (!res.ok) throw new Error(`Delete API error: ${res.status}`);
+  const data = await res.json();
+  return { deletedCount: Number(data.deletedCount || 0) };
+}
