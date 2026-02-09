@@ -31,9 +31,31 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON)
         .setHeader('Access-Control-Allow-Origin', '*');
     }
-
     const headers = values[0].map(h => String(h).trim());
-    const rows = values.slice(1).map(r => {
+
+    // Ensure there is a "ميعاد الحجز" (booking time) column. If missing, append it.
+    const bookingHeader = 'ميعاد الحجز';
+    let bookingCol = headers.findIndex(h => h === bookingHeader);
+    if (bookingCol === -1) {
+      // append new header
+      bookingCol = headers.length;
+      sheet.getRange(1, bookingCol + 1).setValue(bookingHeader);
+      headers.push(bookingHeader);
+    }
+
+    // Fill empty booking time cells with current timestamp (system registration time)
+    const nowStr = new Date().toISOString();
+    const rowsData = values.slice(1);
+    for (let r = 0; r < rowsData.length; r++) {
+      const cell = rowsData[r][bookingCol];
+      if (cell === '' || cell === null || typeof cell === 'undefined') {
+        // write ISO timestamp to sheet (keeps stable format)
+        sheet.getRange(r + 2, bookingCol + 1).setValue(nowStr);
+        rowsData[r][bookingCol] = nowStr;
+      }
+    }
+
+    const rows = rowsData.map(r => {
       const obj = {};
       for (let i = 0; i < headers.length; i++) obj[headers[i] || ('col' + i)] = r[i];
       return obj;

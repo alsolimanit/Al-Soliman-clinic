@@ -2,6 +2,7 @@ export interface ClinicRecord {
   timestamp: string;
   patientName: string;
   doctorName: string;
+  bookingTime?: string;
 }
 
 // Prefer an explicit web app URL for reliability during testing.
@@ -44,6 +45,7 @@ export async function fetchClinicData(): Promise<ClinicRecord[]> {
         timestamp: String(row.timestamp || row.Timestamp || row.time || row.date || ''),
         patientName: String(row.patientName || row['Full Patient Name'] || row.patient || row.name || ''),
         doctorName: String(row.doctorName || row['Doctor Name'] || row.doctor || ''),
+        bookingTime: String(row['ميعاد الحجز'] || row.bookingTime || row.booking_time || row['Booking Time'] || ''),
       }));
 
       console.log(`[api] fetchClinicData -> attempt ${attempt} succeeded, records=${mapped.length}`);

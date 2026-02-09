@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { User, Stethoscope, Calendar } from 'lucide-react';
-import { fetchClinicData, deleteClinicRecords } from '../services/api';
+import { fetchClinicData } from '../services/api';
 import { ClinicRecord } from '../types';
 
 interface PatientView {
@@ -9,6 +9,7 @@ interface PatientView {
   doctorName: string;
   registrationTime: string;
   rawTimestamp: string;
+  bookingRaw?: string;
 }
 
 const formatTimestamp = (ts: string) => {
@@ -26,13 +27,15 @@ const Dashboard: React.FC = () => {
   const parseAndMap = (rows: ClinicRecord[]) => {
     const mapped = rows
       .map((r, idx) => {
-        const raw = String(r.timestamp || '');
+        // Prefer bookingTime (from sheet 'ميعاد الحجز') if present, fallback to timestamp fields
+        const raw = String((r as any).bookingTime || r.timestamp || '');
         return {
           id: `${raw}-${idx}`,
           fullName: String(r.patientName || 'غير معروف'),
           doctorName: String(r.doctorName || 'غير محدد'),
           registrationTime: formatTimestamp(raw),
           rawTimestamp: raw,
+          bookingRaw: String((r as any).bookingTime || ''),
         } as PatientView;
       })
       .sort((a, b) => {
@@ -117,30 +120,7 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-
-  const toggleSelect = (id: string) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
-
-  const handleDeleteSelected = async () => {
-    if (selected.size === 0) return showNotification('لم يتم تحديد أي سجل للحذف');
-    if (!confirm('هل أنت متأكد من حذف السجلات المحددة؟ هذا الإجراء لا يمكن التراجع عنه.')) return;
-    try {
-      const timestamps = patients.filter(p => selected.has(p.id)).map(p => p.rawTimestamp);
-      const res = await deleteClinicRecords(timestamps);
-      showNotification(`تم الحذف (${res.deletedCount})`);
-      setSelected(new Set());
-      load();
-    } catch (e: any) {
-      console.error('Delete failed', e);
-      showNotification('فشل الحذف');
-    }
-  };
+  // selection and deletion UI removed per request
 
   // Count records within the last 24 hours
   const last24Count = patients.filter(p => {
@@ -162,7 +142,6 @@ const Dashboard: React.FC = () => {
         <div className="text-right flex flex-col items-end gap-2">
           <div className="text-xs text-white/80">عدد الزيارات (آخر 24 ساعة)</div>
           <div className="text-2xl font-black">{last24Count}</div>
-          <button onClick={handleDeleteSelected} className="mt-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">حذف المحدد</button>
         </div>
       </div>
 
@@ -179,9 +158,6 @@ const Dashboard: React.FC = () => {
           {patients.map((p, idx) => (
             <div key={p.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 border-b last:border-b-0">
               <div className="flex items-start gap-4">
-                <div className="pt-1">
-                  <input type="checkbox" checked={selected.has(p.id)} onChange={() => toggleSelect(p.id)} />
-                </div>
                 <div className="icon-btn">
                   <User size={20} />
                 </div>
@@ -194,7 +170,7 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs text-slate-400">{p.registrationTime}</div>
+                <div className="text-xs text-slate-400">ميعاد الحجز: {p.registrationTime}</div>
                 <div className="text-sm text-slate-500 mt-1">#{idx + 1}</div>
               </div>
             </div>
